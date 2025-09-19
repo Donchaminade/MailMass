@@ -2,14 +2,24 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:animations/animations.dart';
+import 'package:flutter/foundation.dart'; // Import for compute
+// Removed import 'package:flutter_dotenv/flutter_dotenv.dart'; // Removed as dotenv.load is moved to main.dart
+import 'package:lottie/lottie.dart'; // Import for Lottie animations
 import '../models/email_model.dart';
-import '../services/email_service.dart';
+import '../services/email_service.dart'; // This will be used for the top-level function
 import '../utils/email_utils.dart';
 import '../widgets/email_chip.dart';
 import '../widgets/fade_in.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  final String? senderEmail;
+  final String? senderPassword;
+
+  const HomeScreen({
+    Key? key,
+    this.senderEmail,
+    this.senderPassword,
+  }) : super(key: key);
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -20,13 +30,10 @@ class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _subjectController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
 
-  final EmailService _emailService = EmailService();
-
   List<String> _recipients = [];
   List<File> _attachments = [];
   bool _isSending = false;
-  int _sentCount = 0;
-  int _totalCount = 0;
+  // Removed _sentCount and _totalCount as they are not updated in real-time anymore
 
   @override
   void dispose() {
@@ -121,7 +128,14 @@ class _HomeScreenState extends State<HomeScreen> {
         return AlertDialog(
           backgroundColor: Colors.grey[900],
           title: const Text('Error', style: TextStyle(color: Colors.white)),
-          content: Text(message, style: const TextStyle(color: Colors.white)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Lottie.asset('assets/error_icon.json', repeat: false, width: 100, height: 100),
+              const SizedBox(height: 16),
+              Text(message, style: const TextStyle(color: Colors.white)),
+            ],
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -155,6 +169,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
     await Future.delayed(const Duration(seconds: 2));
 
+    // Use credentials passed from main.dart
+    final senderEmail = widget.senderEmail;
+    final senderPassword = widget.senderPassword;
+
+    if (senderEmail == null || senderPassword == null) {
+      setState(() {
+        _isSending = false;
+      });
+      _showErrorDialog('Email credentials not available. Please restart the app and ensure your .env file is correctly configured.');
+      return;
+    }
+
     final emailData = EmailModel(
       subject: _subjectController.text.trim(),
       message: _messageController.text.trim(),
@@ -162,20 +188,12 @@ class _HomeScreenState extends State<HomeScreen> {
       attachments: _attachments,
     );
 
-    setState(() {
-      _sentCount = 0;
-      _totalCount = _recipients.length;
-    });
-
     try {
-      final results = await _emailService.sendEmails(
-        emailData,
-        onProgress: (sent, total) {
-          setState(() {
-            _sentCount = sent;
-          });
-        },
-      );
+      final results = await compute(sendEmailsInIsolate, {
+        'emailData': emailData,
+        'senderEmail': senderEmail,
+        'senderPassword': senderPassword,
+      });
 
       setState(() {
         _isSending = false;
@@ -192,7 +210,8 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         _isSending = false;
       });
-      _showErrorDialog('Error sending emails: $e');
+      print(e);
+      _showErrorDialog('An unexpected error occurred while sending emails. Please check your credentials and internet connection.\n\nError: $e');
     }
   }
 
@@ -234,7 +253,14 @@ class _HomeScreenState extends State<HomeScreen> {
         return AlertDialog(
           backgroundColor: Colors.grey[900],
           title: const Text('Success', style: TextStyle(color: Colors.white)),
-          content: Text('Successfully sent emails to ${_recipients.length} recipients!', style: const TextStyle(color: Colors.white)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Lottie.asset('assets/success_icon.json', repeat: false, width: 100, height: 100),
+              const SizedBox(height: 16),
+              Text('Successfully sent emails to ${_recipients.length} recipients!', style: const TextStyle(color: Colors.white)),
+            ],
+          ),
           actions: [
             TextButton(
               onPressed: () {
@@ -281,7 +307,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 return FloatingActionButton.extended(
                   onPressed: _sendEmails,
                   label: const Text('Send', style: TextStyle(color: Colors.black)),
-                  icon: const Icon(Icons.send, color: Colors.black),
+                  icon: Lottie.asset('assets/send_icon.json', repeat: true, width: 24, height: 24),
                 );
               },
             ),
@@ -289,29 +315,17 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildProgressView() {
-    double progress = _totalCount > 0 ? _sentCount / _totalCount : 0;
-
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-          ),
+          Lottie.asset('assets/email_icon.json', repeat: true, width: 150, height: 150),
           const SizedBox(height: 24),
           Text(
-            'Sending emails...',
+            'Sending emails...', 
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: Colors.white),
           ),
           const SizedBox(height: 16),
-          Text('$_sentCount of $_totalCount sent', style: const TextStyle(color: Colors.white)),
-          const SizedBox(height: 16),
-          LinearProgressIndicator(
-            value: progress,
-            minHeight: 8,
-            backgroundColor: Colors.grey[800],
-            valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-          ),
         ],
       ),
     );
