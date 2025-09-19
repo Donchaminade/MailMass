@@ -1,10 +1,12 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:animations/animations.dart';
 import '../models/email_model.dart';
 import '../services/email_service.dart';
 import '../utils/email_utils.dart';
 import '../widgets/email_chip.dart';
+import '../widgets/fade_in.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -17,9 +19,9 @@ class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _subjectController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
-  
+
   final EmailService _emailService = EmailService();
-  
+
   List<String> _recipients = [];
   List<File> _attachments = [];
   bool _isSending = false;
@@ -34,33 +36,22 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  void _onEmailTextChanged() {
-    final text = _emailController.text;
-    if (text.isNotEmpty && (text.endsWith(' ') || text.endsWith('\n'))) {
-      _parseAndAddEmails();
-    }
-  }
-
   void _parseAndAddEmails() {
     final emailText = _emailController.text;
     if (emailText.trim().isEmpty) return;
 
     final newEmails = EmailUtils.parseEmailString(emailText);
     final validationResult = EmailUtils.validateEmails(newEmails);
-    
+
     setState(() {
-      // Add valid emails to recipients list, avoiding duplicates
       for (String email in validationResult['valid']!) {
         if (!_recipients.contains(email.toLowerCase())) {
           _recipients.add(email);
         }
       }
-      
-      // Clear the text field
       _emailController.clear();
     });
 
-    // Show message if there were invalid emails
     if (validationResult['invalid']!.isNotEmpty) {
       _showInvalidEmailsDialog(validationResult['invalid']!);
     }
@@ -71,20 +62,21 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Invalid Email Addresses'),
+          backgroundColor: Colors.grey[900],
+          title: const Text('Invalid Email Addresses', style: TextStyle(color: Colors.white)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('The following email addresses are invalid:'),
+              const Text('The following email addresses are invalid:', style: TextStyle(color: Colors.white)),
               const SizedBox(height: 8),
-              ...invalidEmails.map((email) => Text('• $email')),
+              ...invalidEmails.map((email) => Text('• $email', style: const TextStyle(color: Colors.white))),
             ],
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('OK'),
+              child: const Text('OK', style: TextStyle(color: Colors.white)),
             ),
           ],
         );
@@ -108,8 +100,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (result != null) {
         setState(() {
           _attachments.addAll(
-            result.paths.map((path) => File(path!)).where((file) => file.existsSync())
-          );
+              result.paths.map((path) => File(path!)).where((file) => file.existsSync()));
         });
       }
     } catch (e) {
@@ -128,12 +119,13 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Error'),
-          content: Text(message),
+          backgroundColor: Colors.grey[900],
+          title: const Text('Error', style: TextStyle(color: Colors.white)),
+          content: Text(message, style: const TextStyle(color: Colors.white)),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('OK'),
+              child: const Text('OK', style: TextStyle(color: Colors.white)),
             ),
           ],
         );
@@ -157,6 +149,12 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
 
+    setState(() {
+      _isSending = true;
+    });
+
+    await Future.delayed(const Duration(seconds: 2));
+
     final emailData = EmailModel(
       subject: _subjectController.text.trim(),
       message: _messageController.text.trim(),
@@ -165,7 +163,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
 
     setState(() {
-      _isSending = true;
       _sentCount = 0;
       _totalCount = _recipients.length;
     });
@@ -204,13 +201,14 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Email Sending Results'),
+          backgroundColor: Colors.grey[900],
+          title: const Text('Email Sending Results', style: TextStyle(color: Colors.white)),
           content: SingleChildScrollView(
             child: ListBody(
               children: results.entries.map((entry) {
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4.0),
-                  child: Text('${entry.key}: ${entry.value}'),
+                  child: Text('${entry.key}: ${entry.value}', style: const TextStyle(color: Colors.white)),
                 );
               }).toList(),
             ),
@@ -221,7 +219,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.of(context).pop();
                 _clearAll();
               },
-              child: const Text('OK'),
+              child: const Text('OK', style: TextStyle(color: Colors.white)),
             ),
           ],
         );
@@ -234,15 +232,16 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Success'),
-          content: Text('Successfully sent emails to ${_recipients.length} recipients!'),
+          backgroundColor: Colors.grey[900],
+          title: const Text('Success', style: TextStyle(color: Colors.white)),
+          content: Text('Successfully sent emails to ${_recipients.length} recipients!', style: const TextStyle(color: Colors.white)),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
                 _clearAll();
               },
-              child: const Text('OK'),
+              child: const Text('OK', style: TextStyle(color: Colors.white)),
             ),
           ],
         );
@@ -263,50 +262,55 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('MassMail'),
-        backgroundColor: Colors.blue[600],
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.clear_all),
-            onPressed: _clearAll,
-            tooltip: 'Clear All',
-          ),
-        ],
-      ),
       body: _isSending ? _buildProgressView() : _buildMainView(),
+      floatingActionButton: _isSending
+          ? null
+          : OpenContainer(
+              transitionType: ContainerTransitionType.fade,
+              openBuilder: (BuildContext context, VoidCallback _) {
+                return const Scaffold();
+              },
+              closedElevation: 6.0,
+              closedShape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(
+                  Radius.circular(56 / 2),
+                ),
+              ),
+              closedColor: Theme.of(context).primaryColor,
+              closedBuilder: (BuildContext context, VoidCallback openContainer) {
+                return FloatingActionButton.extended(
+                  onPressed: _sendEmails,
+                  label: const Text('Send', style: TextStyle(color: Colors.black)),
+                  icon: const Icon(Icons.send, color: Colors.black),
+                );
+              },
+            ),
     );
   }
 
   Widget _buildProgressView() {
     double progress = _totalCount > 0 ? _sentCount / _totalCount : 0;
-    
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
-            Icons.email,
-            size: 64,
-            color: Colors.blue,
+          const CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
           ),
           const SizedBox(height: 24),
           Text(
             'Sending emails...',
-            style: Theme.of(context).textTheme.headlineSmall,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: Colors.white),
           ),
           const SizedBox(height: 16),
-          Text('$_sentCount of $_totalCount sent'),
+          Text('$_sentCount of $_totalCount sent', style: const TextStyle(color: Colors.white)),
           const SizedBox(height: 16),
           LinearProgressIndicator(
             value: progress,
             minHeight: 8,
-          ),
-          const SizedBox(height: 24),
-          const Text(
-            'Please don\'t close the app while sending...',
-            style: TextStyle(color: Colors.grey),
+            backgroundColor: Colors.grey[800],
+            valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
           ),
         ],
       ),
@@ -314,127 +318,154 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildMainView() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Email Recipients Section
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.people, color: Colors.blue),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Recipients (${_recipients.length})',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _emailController,
-                    decoration: const InputDecoration(
-                      hintText: 'Paste email addresses here (comma, space, or line separated)',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.email),
-                    ),
-                    maxLines: 3,
-                    onChanged: (_) => _onEmailTextChanged(),
-                  ),
-                  const SizedBox(height: 8),
-                  ElevatedButton.icon(
-                    onPressed: _parseAndAddEmails,
-                    icon: const Icon(Icons.add),
-                    label: const Text('Add Emails'),
-                  ),
-                  const SizedBox(height: 16),
-                  EmailChipList(
-                    emails: _recipients,
-                    onEmailRemoved: _removeEmail,
-                  ),
-                ],
-              ),
+    return CustomScrollView(
+      slivers: [
+        SliverAppBar(
+          expandedHeight: 150.0,
+          floating: false,
+          pinned: true,
+          flexibleSpace: FlexibleSpaceBar(
+            title: const Text('CursorMailer'),
+            background: Container(
+              color: Colors.black,
             ),
           ),
-
-          const SizedBox(height: 16),
-
-          // Email Content Section
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.message, color: Colors.blue),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Email Content',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _subjectController,
-                    decoration: const InputDecoration(
-                      labelText: 'Subject *',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.subject),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _messageController,
-                    decoration: const InputDecoration(
-                      labelText: 'Message *',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.message),
-                      alignLabelWithHint: true,
-                    ),
-                    maxLines: 6,
-                  ),
-                ],
-              ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.clear_all),
+              onPressed: _clearAll,
+              tooltip: 'Clear All',
+            ),
+          ],
+        ),
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildRecipientsCard(),
+                const SizedBox(height: 16),
+                _buildContentCard(),
+                const SizedBox(height: 16),
+                _buildAttachmentsCard(),
+              ],
             ),
           ),
+        ),
+      ],
+    );
+  }
 
-          const SizedBox(height: 16),
+  Widget _buildRecipientsCard() {
+    return FadeIn(
+      duration: const Duration(milliseconds: 500),
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Recipients (${_recipients.length})',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 24),
+              TextField(
+                controller: _emailController,
+                decoration: const InputDecoration(
+                  hintText: 'Paste email addresses here',
+                ),
+                maxLines: 3,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _parseAndAddEmails,
+                child: const Text('Valider'),
+              ),
+              const SizedBox(height: 24),
+              EmailChipList(
+                emails: _recipients,
+                onEmailRemoved: _removeEmail,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
-          // Attachments Section
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.attach_file, color: Colors.blue),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Attachments (${_attachments.length})',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      const Spacer(),
-                      ElevatedButton.icon(
-                        onPressed: _pickFiles,
-                        icon: const Icon(Icons.add),
-                        label: const Text('Add Files'),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  if (_attachments.isNotEmpty)
-                    ...(_attachments.map((file) => Card(
+  Widget _buildContentCard() {
+    return FadeIn(
+      duration: const Duration(milliseconds: 500),
+      delay: const Duration(milliseconds: 200),
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Content',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 24),
+              TextField(
+                controller: _subjectController,
+                decoration: const InputDecoration(
+                  labelText: 'Subject',
+                ),
+              ),
+              const SizedBox(height: 24),
+              TextField(
+                controller: _messageController,
+                decoration: const InputDecoration(
+                  labelText: 'Message',
+                  alignLabelWithHint: true,
+                ),
+                maxLines: 6,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAttachmentsCard() {
+    return FadeIn(
+      duration: const Duration(milliseconds: 500),
+      delay: const Duration(milliseconds: 400),
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Attachments (${_attachments.length})',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: _pickFiles,
+                child: const Text('Add Files'),
+              ),
+              const SizedBox(height: 24),
+              if (_attachments.isNotEmpty)
+                ..._attachments.map((file) => Card(
                       margin: const EdgeInsets.only(bottom: 8),
                       child: ListTile(
                         leading: const Icon(Icons.insert_drive_file),
@@ -445,46 +476,15 @@ class _HomeScreenState extends State<HomeScreen> {
                           onPressed: () => _removeAttachment(file),
                         ),
                       ),
-                    )))
-                  else
-                    const Text(
-                      'No attachments added. You can add files by clicking the "Add Files" button.',
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                ],
-              ),
-            ),
+                    ))
+              else
+                const Text(
+                  'No attachments added.',
+                  style: TextStyle(color: Colors.grey),
+                ),
+            ],
           ),
-
-          const SizedBox(height: 24),
-
-          // Send Button
-          ElevatedButton(
-            onPressed: _recipients.isNotEmpty && 
-                     _subjectController.text.isNotEmpty && 
-                     _messageController.text.isNotEmpty
-                ? _sendEmails
-                : null,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue[600],
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.send),
-                const SizedBox(width: 8),
-                Text(_recipients.isEmpty 
-                    ? 'Add Recipients to Send'
-                    : 'Send to ${_recipients.length} Recipients'),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 16),
-        ],
+        ),
       ),
     );
   }

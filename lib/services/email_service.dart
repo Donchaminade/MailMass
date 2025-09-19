@@ -7,7 +7,7 @@ import '../models/email_model.dart';
 class EmailService {
   String? _senderEmail;
   String? _senderPassword;
-  static const String _senderName = 'MassMail App';
+  static const String _senderName = 'CursorMailer';
 
   Future<void> loadCredentials() async {
     await dotenv.load(fileName: ".env");
@@ -71,28 +71,5 @@ class EmailService {
         .replaceAll('\r\n', '<br>')
         .replaceAll('\n', '<br>')
         .replaceAll('\r', '<br>');
-  }
-
-  Future<bool> testEmailConfiguration() async {
-    await loadCredentials();
-    if (_senderEmail == null || _senderPassword == null) {
-      print('Error: Email credentials not loaded from .env file');
-      return false;
-    }
-
-    try {
-      final smtpServer = gmail(_senderEmail!, _senderPassword!);
-      final message = Message()
-        ..from = Address(_senderEmail!, _senderName)
-        ..recipients.add(_senderEmail!)
-        ..subject = 'MassMail Test Email'
-        ..text = 'This is a test email from MassMail app.';
-
-      await send(message, smtpServer);
-      return true;
-    } catch (e) {
-      print('Email configuration test failed: $e');
-      return false;
-    }
   }
 }
