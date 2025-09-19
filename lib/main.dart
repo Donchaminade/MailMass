@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'screens/home_screen.dart';
+import 'screens/main_screen.dart'; // Import MainScreen
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Required for dotenv.load()
@@ -82,7 +82,7 @@ class CursorMailerApp extends StatelessWidget {
           ),
         ),
       ),
-      home: HomeScreen(
+      home: MainScreen( // Use MainScreen here
         senderEmail: senderEmail,
         senderPassword: senderPassword,
       ),
