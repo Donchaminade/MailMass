@@ -56,7 +56,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: Colors.black, // Dark background for splash
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -77,13 +77,15 @@ class _SplashScreenState extends State<SplashScreen> {
                   Theme.of(context).primaryColor), // Golden yellow color
               strokeWidth: 5, // Thicker loading indicator
             ),
-            SizedBox(height: 30), // Increased spacing
-            Text(
-              'Loading Application...',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: Colors.white, // Ensure text is visible
-                    fontWeight: FontWeight.bold,
-                  ),
+            Center(child: SizedBox(height: 30)), // Increased spacing
+            Center(
+              child: Text(
+                'Loading ...',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      color: Colors.white, // Ensure text is visible
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
             ),
           ],
         ),

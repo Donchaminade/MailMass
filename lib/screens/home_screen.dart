@@ -561,27 +561,33 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildFloatingActionButton() {
-    return AnimatedBuilder(
-      animation: _fabAnimationController,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: _isFormValid ? 1.0 : 0.0,
-          child: FloatingActionButton.extended(
-            onPressed: _isFormValid ? _sendEmails : null,
-            backgroundColor: _isFormValid ? Theme.of(context).primaryColor : Colors.grey,
-            foregroundColor: const Color.fromARGB(255, 4, 7, 172),
-            elevation: _isFormValid ? 8 : 0,
-            label: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text('Envoyer', style: TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(width: 8),
-                Icon(Icons.send_rounded),
-              ],
-            ),
-          ),
-        );
-      },
+    return Align(
+      alignment: Alignment.bottomLeft,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0), // Add some padding from the edge
+        child: AnimatedBuilder(
+          animation: _fabAnimationController,
+          builder: (context, child) {
+            return Transform.scale(
+              scale: _isFormValid ? 1.0 : 0.0,
+              child: FloatingActionButton.extended(
+                onPressed: _isFormValid ? _sendEmails : null,
+                backgroundColor: _isFormValid ? Theme.of(context).primaryColor : Colors.grey,
+                foregroundColor: const Color.fromARGB(255, 4, 7, 172),
+                elevation: _isFormValid ? 8 : 0,
+                label: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('Envoyer', style: TextStyle(fontWeight: FontWeight.bold)),
+                    const SizedBox(width: 8),
+                    Icon(Icons.send_rounded),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 
