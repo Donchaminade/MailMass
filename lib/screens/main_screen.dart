@@ -6,11 +6,18 @@ import 'package:flutter/services.dart';
 
 import 'home_screen.dart';
 
+import 'package:cursormailer/services/notification_service.dart';
+
 class MainScreen extends StatefulWidget {
   final String? senderEmail;
   final String? senderPassword;
+  final NotificationService notificationService;
 
-  const MainScreen({Key? key, this.senderEmail, this.senderPassword})
+  const MainScreen(
+      {Key? key,
+      this.senderEmail,
+      this.senderPassword,
+      required this.notificationService})
       : super(key: key);
 
   @override
@@ -69,6 +76,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         senderEmail: widget.senderEmail,
         senderPassword: widget.senderPassword,
         onEmailsSent: _addEmailHistory,
+        notificationService: widget.notificationService,
       ),
       _buildHistoryScreen(),
       _buildSettingsScreen(),
@@ -374,72 +382,74 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
             ),
           ],
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(16),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Icon(
+                  Icons.history_rounded,
+                  size: 64,
+                  color: Colors.grey.shade400,
+                ),
               ),
-              child: Icon(
-                Icons.history_rounded,
-                size: 64,
-                color: Colors.grey.shade400,
+              const SizedBox(height: 24),
+              Text(
+                'Aucun historique',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey.shade800,
+                ),
               ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'Aucun historique',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey.shade800,
+              const SizedBox(height: 12),
+              Text(
+                'Vous n\'avez encore envoyé aucun e-mail.',
+                style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+                textAlign: TextAlign.center,
               ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Vous n\'avez encore envoyé aucun e-mail.',
-              style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Vos statistiques d\'envoi apparaîtront ici après votre premier envoi.',
-              style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 32),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.blue.shade200),
+              const SizedBox(height: 8),
+              Text(
+                'Vos statistiques d\'envoi apparaîtront ici après votre premier envoi.',
+                style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+                textAlign: TextAlign.center,
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.info_outline,
-                    size: 16,
-                    color: Colors.blue.shade600,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Commencez par composer un e-mail',
-                    style: TextStyle(
-                      color: Colors.blue.shade700,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
+              const SizedBox(height: 32),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.blue.shade200),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.info_outline,
+                      size: 16,
+                      color: Colors.blue.shade600,
                     ),
-                  ),
-                ],
-                
+                    const SizedBox(width: 8),
+                    Text(
+                      'Commencez par composer un e-mail',
+                      style: TextStyle(
+                        color: Colors.blue.shade700,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                  
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -782,11 +792,13 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
             pinned: true,
             backgroundColor: Colors.transparent,
             flexibleSpace: FlexibleSpaceBar(
-              title: const Text(
-                'Paramètres',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
+              title: Center(
+                child: Text(
+                  'Paramètres',
+                  style: TextStyle(
+                    color: const Color.fromARGB(255, 4, 31, 180),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               background: Container(
@@ -795,9 +807,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Colors.purple.shade600,
-                      Colors.purple.shade400,
-                      Colors.pink.shade300,
+                      const Color.fromARGB(255, 43, 190, 216),
+                      const Color.fromARGB(255, 35, 190, 196),
+                      const Color.fromARGB(255, 69, 140, 235),
                     ],
                   ),
                 ),
@@ -820,23 +832,23 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text(
-                            'CursorMailer Pro',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            widget.senderEmail ?? 'Non configuré',
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.8),
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
+                        // children: [
+                        //   const Text(
+                        //     'CursorMailer Pro',
+                        //     style: TextStyle(
+                        //       color: Colors.white,
+                        //       fontSize: 16,
+                        //       fontWeight: FontWeight.bold,
+                        //     ),
+                        //   ),
+                        //   Text(
+                        //     widget.senderEmail ?? 'Non configuré',
+                        //     style: TextStyle(
+                        //       color: Colors.white.withOpacity(0.8),
+                        //       fontSize: 12,
+                        //     ),
+                        //   ),
+                        // ],
                       ),
                     ],
                   ),

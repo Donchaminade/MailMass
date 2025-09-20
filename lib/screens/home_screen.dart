@@ -12,16 +12,20 @@ import '../utils/email_utils.dart';
 import '../widgets/email_chip.dart';
 import '../widgets/fade_in.dart';
 
+import 'package:cursormailer/services/notification_service.dart';
+
 class HomeScreen extends StatefulWidget {
   final String? senderEmail;
   final String? senderPassword;
   final Function(EmailModel, Map<String, String>)? onEmailsSent;
+  final NotificationService notificationService;
 
   const HomeScreen({
     Key? key,
     this.senderEmail,
     this.senderPassword,
     this.onEmailsSent,
+    required this.notificationService,
   }) : super(key: key);
 
   @override
@@ -130,7 +134,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               children: [
                 Icon(
                   Icons.error_outline_rounded,
-                  color: const Color.fromARGB(255, 197, 33, 33),
+                  color: Colors.white,
                   size: 48,
                 ),
                 const SizedBox(height: 16),
@@ -366,17 +370,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       });
 
       if (results.containsKey('error')) {
-        _showErrorDialog(results['error']!);
-      } else if (results['summary'] != 'All emails sent successfully.') {
-        _showResultsDialog(results);
+        widget.notificationService.showNotification('Erreur', results['error']!);
       } else {
-        _showSuccessDialog();
+        final successCount = results.values.where((status) => status == 'Success').length;
+        final totalCount = emailData.recipients.length;
+        if (successCount == totalCount) {
+          widget.notificationService.showNotification('Succès', 'Tous les e-mails ont été envoyés avec succès.');
+        } else {
+          widget.notificationService.showNotification('Partiel', '$successCount sur $totalCount e-mails ont été envoyés avec succès.');
+        }
       }
     } catch (e) {
       setState(() {
         _isSending = false;
       });
-      _showErrorDialog('Une erreur inattendue s\'est produite.\n\nErreur : $e');
+      widget.notificationService.showNotification('Erreur', 'Une erreur inattendue s\'est produite.');
     }
   }
 
@@ -398,167 +406,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
     focusNode.requestFocus();
     HapticFeedback.lightImpact();
-  }
-
-  void _showResultsDialog(Map<String, String> results) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          backgroundColor: Colors.transparent,
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.blue.shade800,
-                  Colors.blue.shade900,
-                ],
-              ),
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.blue.withOpacity(0.3),
-                  blurRadius: 20,
-                  spreadRadius: 5,
-                ),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.info_outline, color: Colors.white, size: 48),
-                const SizedBox(height: 16),
-                Text(
-                  'Résultats d\'envoi',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  constraints: BoxConstraints(maxHeight: 200),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: results.entries.map((entry) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4),
-                          child: Row(
-                            children: [
-                              Icon(
-                                entry.value.contains('Success') ? Icons.check : Icons.error,
-                                color: entry.value.contains('Success') ? Colors.green : Colors.red,
-                                size: 16,
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  '${entry.key}: ${entry.value}',
-                                  style: TextStyle(color: Colors.white, fontSize: 14),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    _clearAll();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.blue.shade800,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                  ),
-                  child: const Text('OK', style: TextStyle(fontWeight: FontWeight.bold)),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  void _showSuccessDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          backgroundColor: Colors.transparent,
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.green.shade800,
-                  Colors.green.shade900,
-                ],
-              ),
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.green.withOpacity(0.3),
-                  blurRadius: 20,
-                  spreadRadius: 5,
-                ),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Lottie.asset('assets/success_icon.json', repeat: false, width: 80, height: 80),
-                const SizedBox(height: 16),
-                Text(
-                  'Succès !',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'E-mails envoyés avec succès à ${_recipients.length} destinataires !',
-                  style: TextStyle(color: Colors.white70, fontSize: 16),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    _clearAll();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.green.shade800,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                  ),
-                  child: const Text('Parfait !', style: TextStyle(fontWeight: FontWeight.bold)),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
   }
 
   void _clearAll() {

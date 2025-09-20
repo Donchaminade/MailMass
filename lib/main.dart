@@ -1,10 +1,21 @@
+import 'package:cursormailer/services/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'screens/main_screen.dart'; // Import MainScreen
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Required for dotenv.load()
   await dotenv.load(fileName: ".env");
+
+  await Permission.notification.isDenied.then((value) {
+    if (value) {
+      Permission.notification.request();
+    }
+  });
+
+  final NotificationService notificationService = NotificationService();
+  await notificationService.init();
 
   final senderEmail = dotenv.env['GMAIL_EMAIL'];
   final senderPassword = dotenv.env['GMAIL_PASSWORD'];
@@ -12,17 +23,20 @@ void main() async {
   runApp(CursorMailerApp(
     senderEmail: senderEmail,
     senderPassword: senderPassword,
+    notificationService: notificationService,
   ));
 }
 
 class CursorMailerApp extends StatelessWidget {
   final String? senderEmail;
   final String? senderPassword;
+  final NotificationService notificationService;
 
   const CursorMailerApp({
     super.key,
     this.senderEmail,
     this.senderPassword,
+    required this.notificationService,
   });
 
   @override
@@ -91,6 +105,7 @@ class CursorMailerApp extends StatelessWidget {
       home: MainScreen( // Use MainScreen here
         senderEmail: senderEmail,
         senderPassword: senderPassword,
+        notificationService: notificationService,
       ),
       debugShowCheckedModeBanner: false,
     );
