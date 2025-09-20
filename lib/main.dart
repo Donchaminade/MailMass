@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'screens/main_screen.dart'; // Import MainScreen
+import 'screens/splash.dart'; // Import SplashScreen
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Required for dotenv.load()
@@ -102,7 +103,7 @@ class CursorMailerApp extends StatelessWidget {
           type: BottomNavigationBarType.fixed, // Ensures all labels are visible
         ),
       ),
-      home: MainScreen( // Use MainScreen here
+      home: SplashScreen( // Use SplashScreen here
         senderEmail: senderEmail,
         senderPassword: senderPassword,
         notificationService: notificationService,

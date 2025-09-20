@@ -3,6 +3,7 @@
 
 import 'package:cursormailer/models/email_model.dart';
 
+
 enum EmailSendStatus {
   success,
   failed,

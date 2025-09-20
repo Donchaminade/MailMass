@@ -361,7 +361,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
 
     try {
-      final results = await compute(sendEmailsInIsolate, {
+      final Map<String, String> results = await compute(sendEmailsInIsolate, {
         'emailData': emailData,
         'senderEmail': senderEmail,
         'senderPassword': senderPassword,
@@ -373,11 +373,57 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         _isSending = false;
       });
 
+      // Determine status and message for the custom overlay
+      String overlayTitle;
+      String overlayMessage;
+      IconData overlayIcon;
+      Color overlayColor;
+
+      final successCount = results.values.where((status) => status == 'Success').length;
+      final totalCount = emailData.recipients.length;
+
+      if (successCount == totalCount) {
+        overlayTitle = 'Succès !';
+        overlayMessage = 'Tous les e-mails ont été envoyés avec succès.';
+        overlayIcon = Icons.check_circle_outline;
+        overlayColor = Colors.green.shade600;
+      } else if (successCount > 0) {
+        overlayTitle = 'Envoi partiel';
+        overlayMessage = '$successCount sur $totalCount e-mails ont été envoyés avec succès.';
+        overlayIcon = Icons.warning_amber_outlined;
+        overlayColor = Colors.orange.shade600;
+      } else {
+        overlayTitle = 'Échec de l\'envoi';
+        overlayMessage = 'Aucun e-mail n\'a pu être envoyé.';
+        overlayIcon = Icons.error_outline;
+        overlayColor = Colors.red.shade600;
+      }
+
+      // Show custom status overlay
+      await showGeneralDialog(
+        context: context,
+        barrierDismissible: false,
+        barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+        barrierColor: Colors.black.withOpacity(0.7),
+        transitionDuration: const Duration(milliseconds: 300),
+        pageBuilder: (BuildContext buildContext, Animation<double> animation, Animation<double> secondaryAnimation) {
+          return FadeTransition(
+            opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
+            child: ScaleTransition(
+              scale: CurvedAnimation(parent: animation, curve: Curves.easeOutBack),
+              child: _buildStatusOverlay(overlayTitle, overlayMessage, overlayIcon, overlayColor),
+            ),
+          );
+        },
+      );
+
+      // Clear fields after the status pop-up is dismissed
+      _clearAll();
+
+      // Then show the notification
       if (results.containsKey('error')) {
         widget.notificationService.showNotification('Erreur', results['error']!);
       } else {
-        final successCount = results.values.where((status) => status == 'Success').length;
-        final totalCount = emailData.recipients.length;
         if (successCount == totalCount) {
           widget.notificationService.showNotification('Succès', 'Tous les e-mails ont été envoyés avec succès.');
         } else {
@@ -390,6 +436,82 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       });
       widget.notificationService.showNotification('Erreur', 'Une erreur inattendue s\'est produite.');
     }
+  }
+
+  Widget _buildStatusOverlay(String title, String message, IconData icon, Color color) {
+    return Scaffold(
+      backgroundColor: Colors.black.withOpacity(0.7), // Semi-transparent background
+      body: Center(
+        child: Container(
+          padding: const EdgeInsets.all(32),
+          margin: const EdgeInsets.symmetric(horizontal: 24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 30,
+                offset: const Offset(0, 15),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                color: color,
+                size: 80,
+              ),
+              const SizedBox(height: 24),
+              Text(
+                title,
+                style: TextStyle(
+                  color: Colors.grey.shade900,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                message,
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: 16,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Dismiss the dialog
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: color, // Button color matches status
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'OK',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   void _showValidationError(String message, FocusNode focusNode) {
