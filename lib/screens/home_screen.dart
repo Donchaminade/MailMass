@@ -278,7 +278,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Lottie.asset('assets/error_icon.json', repeat: false, width: 80, height: 80),
+                Icon(
+                  Icons.error,
+                  color: Colors.white,
+                  size: 48,
+                ),
                 const SizedBox(height: 16),
                 Text(
                   'Erreur',
@@ -485,7 +489,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ),
               child: Column(
                 children: [
-                  Lottie.asset('assets/email_icon.json', repeat: true, width: 120, height: 120),
+                  Icon(
+                    Icons.email_rounded,
+                    color: Colors.white,
+                    size: 120,
+                  ),
                   const SizedBox(height: 24),
                   Text(
                     'Envoi en cours...',
