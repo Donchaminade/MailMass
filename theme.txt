@@ -1,0 +1,523 @@
+// 1. Service de gestion des thèmes
+// lib/services/theme_service.dart
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+enum AppTheme { light, dark, system }
+enum AccentColor { blue, green, orange, purple, red, teal }
+
+class ThemeService {
+  static const String _themeKey = 'app_theme';
+  static const String _accentColorKey = 'accent_color';
+  
+  // Obtenir le thème sauvegardé
+  static Future<AppTheme> getSavedTheme() async {
+    final prefs = await SharedPreferences.getInstance();
+    final themeString = prefs.getString(_themeKey) ?? 'system';
+    return AppTheme.values.firstWhere(
+      (theme) => theme.name == themeString,
+      orElse: () => AppTheme.system,
+    );
+  }
+  
+  // Sauvegarder le thème
+  static Future<void> saveTheme(AppTheme theme) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_themeKey, theme.name);
+  }
+  
+  // Obtenir la couleur d'accent sauvegardée
+  static Future<AccentColor> getSavedAccentColor() async {
+    final prefs = await SharedPreferences.getInstance();
+    final colorString = prefs.getString(_accentColorKey) ?? 'blue';
+    return AccentColor.values.firstWhere(
+      (color) => color.name == colorString,
+      orElse: () => AccentColor.blue,
+    );
+  }
+  
+  // Sauvegarder la couleur d'accent
+  static Future<void> saveAccentColor(AccentColor color) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_accentColorKey, color.name);
+  }
+}
+
+// 2. Générateur de thèmes
+// lib/themes/app_themes.dart
+class AppThemes {
+  // Couleurs d'accent disponibles
+  static const Map<AccentColor, Color> accentColors = {
+    AccentColor.blue: Color(0xFF2196F3),
+    AccentColor.green: Color(0xFF4CAF50),
+    AccentColor.orange: Color(0xFFFF9800),
+    AccentColor.purple: Color(0xFF9C27B0),
+    AccentColor.red: Color(0xFFF44336),
+    AccentColor.teal: Color(0xFF009688),
+  };
+  
+  // Noms d'affichage des couleurs
+  static const Map<AccentColor, String> accentColorNames = {
+    AccentColor.blue: 'Bleu',
+    AccentColor.green: 'Vert',
+    AccentColor.orange: 'Orange',
+    AccentColor.purple: 'Violet',
+    AccentColor.red: 'Rouge',
+    AccentColor.teal: 'Sarcelle',
+  };
+  
+  // Générer le thème clair
+  static ThemeData lightTheme(AccentColor accentColor) {
+    final primaryColor = accentColors[accentColor]!;
+    
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.light,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: primaryColor,
+        brightness: Brightness.light,
+      ),
+      primaryColor: primaryColor,
+      scaffoldBackgroundColor: Colors.grey[50],
+      
+      // AppBar Theme
+      appBarTheme: AppBarTheme(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        titleTextStyle: TextStyle(
+          color: Colors.grey[800],
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
+        iconTheme: IconThemeData(color: Colors.grey[700]),
+      ),
+      
+      // Card Theme
+      cardTheme: CardTheme(
+        color: Colors.white,
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        shadowColor: Colors.black.withOpacity(0.1),
+      ),
+      
+      // Elevated Button Theme
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: primaryColor,
+          foregroundColor: Colors.white,
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        ),
+      ),
+      
+      // Outlined Button Theme
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: primaryColor,
+          side: BorderSide(color: primaryColor),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        ),
+      ),
+      
+      // Input Decoration Theme
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: Colors.grey[100],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: primaryColor, width: 2),
+        ),
+        labelStyle: TextStyle(color: Colors.grey[600]),
+        hintStyle: TextStyle(color: Colors.grey[500]),
+      ),
+      
+      // Floating Action Button Theme
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
+        elevation: 4,
+      ),
+      
+      // Bottom Navigation Bar Theme
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: Colors.white,
+        selectedItemColor: primaryColor,
+        unselectedItemColor: Colors.grey[500],
+        type: BottomNavigationBarType.fixed,
+      ),
+    );
+  }
+  
+  // Générer le thème sombre
+  static ThemeData darkTheme(AccentColor accentColor) {
+    final primaryColor = accentColors[accentColor]!;
+    
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: primaryColor,
+        brightness: Brightness.dark,
+      ),
+      primaryColor: primaryColor,
+      scaffoldBackgroundColor: const Color(0xFF121212),
+      
+      // AppBar Theme
+      appBarTheme: AppBarTheme(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        titleTextStyle: const TextStyle(
+          color: Colors.white,
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
+        iconTheme: const IconThemeData(color: Colors.white70),
+      ),
+      
+      // Card Theme
+      cardTheme: CardTheme(
+        color: const Color(0xFF1E1E1E),
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        shadowColor: Colors.black.withOpacity(0.3),
+      ),
+      
+      // Elevated Button Theme
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: primaryColor,
+          foregroundColor: Colors.white,
+          elevation: 4,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        ),
+      ),
+      
+      // Outlined Button Theme
+      outlinedButtonThemeData: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: primaryColor,
+          side: BorderSide(color: primaryColor),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        ),
+      ),
+      
+      // Input Decoration Theme
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: const Color(0xFF2A2A2A),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: primaryColor, width: 2),
+        ),
+        labelStyle: const TextStyle(color: Colors.white70),
+        hintStyle: const TextStyle(color: Colors.white54),
+      ),
+      
+      // Floating Action Button Theme
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
+        elevation: 6,
+      ),
+      
+      // Bottom Navigation Bar Theme
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: const Color(0xFF1E1E1E),
+        selectedItemColor: primaryColor,
+        unselectedItemColor: Colors.grey[400],
+        type: BottomNavigationBarType.fixed,
+      ),
+    );
+  }
+}
+
+// 3. Provider de thème
+// lib/providers/theme_provider.dart
+import 'package:flutter/material.dart';
+import '../services/theme_service.dart';
+import '../themes/app_themes.dart';
+
+class ThemeProvider extends ChangeNotifier {
+  AppTheme _currentTheme = AppTheme.system;
+  AccentColor _currentAccentColor = AccentColor.blue;
+  
+  AppTheme get currentTheme => _currentTheme;
+  AccentColor get currentAccentColor => _currentAccentColor;
+  
+  // Initialiser le provider
+  Future<void> initialize() async {
+    _currentTheme = await ThemeService.getSavedTheme();
+    _currentAccentColor = await ThemeService.getSavedAccentColor();
+    notifyListeners();
+  }
+  
+  // Changer le thème
+  Future<void> setTheme(AppTheme theme) async {
+    _currentTheme = theme;
+    await ThemeService.saveTheme(theme);
+    notifyListeners();
+  }
+  
+  // Changer la couleur d'accent
+  Future<void> setAccentColor(AccentColor color) async {
+    _currentAccentColor = color;
+    await ThemeService.saveAccentColor(color);
+    notifyListeners();
+  }
+  
+  // Obtenir le thème clair avec la couleur d'accent actuelle
+  ThemeData get lightTheme => AppThemes.lightTheme(_currentAccentColor);
+  
+  // Obtenir le thème sombre avec la couleur d'accent actuelle
+  ThemeData get darkTheme => AppThemes.darkTheme(_currentAccentColor);
+  
+  // Déterminer le mode de thème pour MaterialApp
+  ThemeMode get themeMode {
+    switch (_currentTheme) {
+      case AppTheme.light:
+        return ThemeMode.light;
+      case AppTheme.dark:
+        return ThemeMode.dark;
+      case AppTheme.system:
+        return ThemeMode.system;
+    }
+  }
+}
+
+// 4. Dialog d'apparence fonctionnel
+// À intégrer dans votre MainScreen
+void _showThemeDialog() {
+  showDialog(
+    context: context,
+    builder: (context) => StatefulBuilder(
+      builder: (context, setState) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text('Paramètres d\'apparence', style: TextStyle(color: Colors.grey.shade800)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Mode d\'affichage',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey.shade800,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 12),
+              _buildThemeOption('Mode clair', AppTheme.light, setState),
+              _buildThemeOption('Mode sombre', AppTheme.dark, setState),
+              _buildThemeOption('Suivre le système', AppTheme.system, setState),
+              
+              const SizedBox(height: 20),
+              Divider(color: Colors.grey.shade300),
+              const SizedBox(height: 16),
+              
+              Text(
+                'Couleur d\'accent',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey.shade800,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 12),
+              
+              Wrap(
+                spacing: 12,
+                runSpacing: 8,
+                children: AccentColor.values.map((color) {
+                  return _buildColorOption(color, setState);
+                }).toList(),
+              ),
+              
+              const SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.blue.shade200),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.blue.shade600, size: 16),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Les changements sont appliqués immédiatement',
+                        style: TextStyle(
+                          color: Colors.blue.shade700,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Fermer', style: TextStyle(color: Colors.grey.shade600)),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text('Paramètres d\'apparence sauvegardés !'),
+                    backgroundColor: Colors.green.shade600,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                );
+              },
+              child: Text('OK', style: TextStyle(color: Colors.blue.shade600)),
+            ),
+          ],
+        );
+      },
+    ),
+  );
+}
+
+Widget _buildThemeOption(String title, AppTheme theme, StateSetter setState) {
+  // Vous devrez accéder au ThemeProvider ici
+  // final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+  // bool selected = themeProvider.currentTheme == theme;
+  
+  bool selected = false; // Remplacer par la logique du provider
+  
+  return ListTile(
+    contentPadding: EdgeInsets.zero,
+    title: Text(title, style: TextStyle(color: Colors.grey.shade800)),
+    leading: Icon(
+      selected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+      color: selected ? Colors.blue.shade600 : Colors.grey.shade400,
+    ),
+    onTap: () {
+      // themeProvider.setTheme(theme);
+      setState(() {});
+    },
+  );
+}
+
+Widget _buildColorOption(AccentColor color, StateSetter setState) {
+  // Vous devrez accéder au ThemeProvider ici
+  // final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+  // bool selected = themeProvider.currentAccentColor == color;
+  
+  bool selected = color == AccentColor.blue; // Remplacer par la logique du provider
+  
+  return GestureDetector(
+    onTap: () {
+      // themeProvider.setAccentColor(color);
+      setState(() {});
+    },
+    child: Container(
+      width: 50,
+      height: 50,
+      decoration: BoxDecoration(
+        color: AppThemes.accentColors[color],
+        shape: BoxShape.circle,
+        border: selected 
+          ? Border.all(color: Colors.grey.shade800, width: 3)
+          : Border.all(color: Colors.grey.shade300, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: AppThemes.accentColors[color]!.withOpacity(0.3),
+            blurRadius: selected ? 8 : 4,
+            spreadRadius: selected ? 2 : 0,
+          ),
+        ],
+      ),
+      child: selected
+        ? Icon(Icons.check, color: Colors.white, size: 24)
+        : null,
+    ),
+  );
+}
+
+// 5. Instructions d'intégration dans main.dart
+/*
+Pour intégrer ce système dans votre application :
+
+1. Ajouter les dépendances dans pubspec.yaml :
+   dependencies:
+     provider: ^6.0.0
+     shared_preferences: ^2.0.0
+
+2. Modifier votre main.dart :
+
+import 'package:provider/provider.dart';
+import 'providers/theme_provider.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  final themeProvider = ThemeProvider();
+  await themeProvider.initialize();
+  
+  runApp(
+    ChangeNotifierProvider.value(
+      value: themeProvider,
+      child: MyApp(),
+    ),
+  );
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return MaterialApp(
+          title: 'CursorMailer',
+          theme: themeProvider.lightTheme,
+          darkTheme: themeProvider.darkTheme,
+          themeMode: themeProvider.themeMode,
+          home: MainScreen(
+            senderEmail: 'your@email.com',
+            senderPassword: 'password',
+          ),
+        );
+      },
+    );
+  }
+}
+
+3. Dans votre MainScreen, remplacer _showThemeDialog() par la version ci-dessus
+   et utiliser Provider.of<ThemeProvider>(context) pour accéder au thème actuel.
+*/

@@ -30,20 +30,20 @@ class CursorMailerApp extends StatelessWidget {
     return MaterialApp(
       title: 'CursorMailer',
       theme: ThemeData(
-        brightness: Brightness.dark,
-        primaryColor: Colors.white,
-        scaffoldBackgroundColor: Colors.black,
-        cardColor: Colors.grey[850], // Slightly lighter grey for cards
-        textTheme: const TextTheme(
+        brightness: Brightness.dark, // Keep dark brightness for overall feel
+        primaryColor: const Color(0xFFD4AF37), // Pure Golden Yellow
+        scaffoldBackgroundColor: const Color(0xFF0000A0), // Concentrated Blue
+        cardColor: const Color(0xFF1A1A30), // Dark blue-grey for cards
+        textTheme: TextTheme(
           displayLarge: TextStyle(color: Colors.white, fontSize: 57, fontWeight: FontWeight.w700),
           headlineMedium: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w600),
           titleLarge: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w600),
           bodyLarge: TextStyle(color: Colors.white, fontSize: 16),
           bodyMedium: TextStyle(color: Colors.white, fontSize: 14),
-          labelLarge: TextStyle(color: Colors.black, fontSize: 14, fontWeight: FontWeight.w600), // For buttons
+          labelLarge: TextStyle(color: Colors.black, fontSize: 14, fontWeight: FontWeight.w600), // For buttons, black text on yellow/gold
         ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.black,
+        appBarTheme: AppBarTheme(
+          backgroundColor: const Color(0xFF0000A0), // Concentrated Blue
           foregroundColor: Colors.white, // Ensures icons and text are white
           elevation: 0,
           centerTitle: true,
@@ -55,8 +55,8 @@ class CursorMailerApp extends StatelessWidget {
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: const Color(0xFFD4AF37), // Pure Golden Yellow
+            foregroundColor: Colors.black, // Black text on yellow/gold
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8), // Slightly rounded buttons
@@ -65,7 +65,7 @@ class CursorMailerApp extends StatelessWidget {
         ),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
-          fillColor: Colors.grey[900], // Subtle background for text fields
+          fillColor: const Color(0xFF0A0A20), // Very dark blue for text fields
           labelStyle: const TextStyle(color: Colors.white),
           hintStyle: TextStyle(color: Colors.grey[600]), // Lighter hint text
           enabledBorder: OutlineInputBorder(
@@ -73,13 +73,19 @@ class CursorMailerApp extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
           ),
           focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Colors.white, width: 2.0), // Thicker border on focus
+            borderSide: const BorderSide(color: Color(0xFFD4AF37), width: 2.0), // Golden yellow border on focus
             borderRadius: BorderRadius.circular(8),
           ),
           border: OutlineInputBorder(
             borderSide: const BorderSide(color: Colors.white, width: 1.0),
             borderRadius: BorderRadius.circular(8),
           ),
+        ),
+        bottomNavigationBarTheme: BottomNavigationBarThemeData(
+          backgroundColor: const Color(0xFF0000A0), // Concentrated Blue
+          selectedItemColor: const Color(0xFFD4AF37), // Golden Yellow for selected item
+          unselectedItemColor: Colors.grey[600], // Muted grey for unselected items
+          type: BottomNavigationBarType.fixed, // Ensures all labels are visible
         ),
       ),
       home: MainScreen( // Use MainScreen here
