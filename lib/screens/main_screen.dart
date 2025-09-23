@@ -1258,6 +1258,13 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                     Colors.black,
                     onTap: () => _launchURL('https://github.com/Donchaminade'),
                   ),
+                  _buildAboutItem(
+                    Icons.chat,
+                    'WhatsApp',
+                    'Discuter sur WhatsApp',
+                    Colors.green.shade600,
+                    onTap: () => _launchURL('https://wa.me/+22899181626'), // Replace with your WhatsApp number
+                  ),
                 ]),
                 const SizedBox(height: 24),
                 _buildAboutSection('Application', Icons.info_outline, [
@@ -1412,8 +1419,12 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   }
 
   void _launchURL(String url) async {
-    if (await canLaunchUrl(Uri.parse(url))) {
-      await launchUrl(Uri.parse(url));
+    final Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication, // This will prompt "Open with"
+      );
     } else {
       // Handle error - could show a SnackBar or Dialog
       print('Could not launch $url');
