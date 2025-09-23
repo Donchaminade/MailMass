@@ -46,7 +46,7 @@ class CursorMailerApp extends StatelessWidget {
       title: 'CursorMailer',
       theme: ThemeData(
         brightness: Brightness.dark, // Keep dark brightness for overall feel
-        primaryColor: const Color(0xFFD4AF37), // Pure Golden Yellow
+        primaryColor: const Color.fromARGB(255, 7, 75, 223), // Pure Golden Yellow
         scaffoldBackgroundColor: const Color(0xFF0000A0), // Concentrated Blue
         cardColor: const Color(0xFF1A1A30), // Dark blue-grey for cards
         textTheme: TextTheme(
@@ -70,7 +70,7 @@ class CursorMailerApp extends StatelessWidget {
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFD4AF37), // Pure Golden Yellow
+            backgroundColor: const Color.fromARGB(255, 11, 52, 233), // Pure Golden Yellow
             foregroundColor: Colors.black, // Black text on yellow/gold
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             shape: RoundedRectangleBorder(
@@ -88,7 +88,7 @@ class CursorMailerApp extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
           ),
           focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Color(0xFFD4AF37), width: 2.0), // Golden yellow border on focus
+            borderSide: const BorderSide(color: Color.fromARGB(255, 2, 85, 238), width: 2.0), // Golden yellow border on focus
             borderRadius: BorderRadius.circular(8),
           ),
           border: OutlineInputBorder(
@@ -98,7 +98,7 @@ class CursorMailerApp extends StatelessWidget {
         ),
         bottomNavigationBarTheme: BottomNavigationBarThemeData(
           backgroundColor: const Color(0xFF0000A0), // Concentrated Blue
-          selectedItemColor: const Color(0xFFD4AF37), // Golden Yellow for selected item
+          selectedItemColor: const Color.fromARGB(255, 255, 255, 255), // Golden Yellow for selected item
           unselectedItemColor: Colors.grey[600], // Muted grey for unselected items
           type: BottomNavigationBarType.fixed, // Ensures all labels are visible
         ),
